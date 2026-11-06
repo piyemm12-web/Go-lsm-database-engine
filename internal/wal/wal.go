@@ -2,6 +2,7 @@ package wal
 
 import (
 	"encoding/binary"
+	"errors"
 	"io"
 	"os"
 	"sync"
@@ -54,11 +55,7 @@ func (w *WAL) ReadAll() ([]*Entry, error) {
 	for {
 		headerBuf := make([]byte, 12)
 		_, err := io.ReadFull(w.file, headerBuf)
-		
-		if err == io.EOF {
-			break
-		}
-		if err == io.ErrUnexpectedEOF {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
 			break
 		}
 		if err != nil {
@@ -71,7 +68,7 @@ func (w *WAL) ReadAll() ([]*Entry, error) {
 		payloadSize := keySize + valSize
 		payloadBuf := make([]byte, payloadSize)
 		if _, err := io.ReadFull(w.file, payloadBuf); err != nil {
-			if err == io.ErrUnexpectedEOF {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
 				break 
 			}
 			return nil, err

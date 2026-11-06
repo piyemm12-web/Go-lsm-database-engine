@@ -6,4 +6,5 @@ data/
 
 # Binaries and executables
 *.exe
+*.exe~
 *.test

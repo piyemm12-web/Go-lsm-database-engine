@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"hash/crc32"
+	"io"
 )
 
 var (
@@ -78,13 +79,17 @@ func Deserialize(data []byte) (*Entry, error) {
 	binary.Read(payloadReader, binary.BigEndian, &valSize)
 
 	key := make([]byte, keySize)
-	if _, err := payloadReader.Read(key); err != nil {
-		return nil, err
+	if len(key) > 0 {
+		if _, err := io.ReadFull(payloadReader, key); err != nil {
+			return nil, err
+		}
 	}
 
 	value := make([]byte, valSize)
-	if _, err := payloadReader.Read(value); err != nil {
-		return nil, err
+	if len(value) > 0 {
+		if _, err := io.ReadFull(payloadReader, value); err != nil {
+			return nil, err
+		}
 	}
 
 	return &Entry{Key: key, Value: value}, nil
